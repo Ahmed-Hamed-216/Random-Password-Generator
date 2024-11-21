@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Password Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <!-- أضف زر تبديل الوضع الليلي -->
+<button id="toggle-night-mode">وضع ليلي</button> <br/> <br/>
+
+    <div class="container">
+      <h1>Random Password Generator</h1>
+      <p>Create strong and secure passwords to keep your account safe online.</p>
+
+      <!-- قسم كلمة المرور -->
+      <div class="password-section">
+        <div class="password-container">
+          <input type="text" id="password" readonly value="WcbPR8yNhLTgm5X" style="width: 80%;">
+          <span class="strength-indicator">Very strong</span>
+          <button id="generate-button"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <!-- <button id="copy-button"><i class="fa fa-copy"></i></button> -->
+        <!-- <button id="copy-button">Copy <i class="fa fa-copy"></i></button> -->
+        <button id="copy-button">Copy</button>
+      </div>
+
+      <!-- قسم طول كلمة المرور -->
+      <div class="controls-section">
+        <label for="length">Password length:<span style="width: 15px; margin-left: 10px;" id="length-value">10</span></label>
+        <div class="slider-container">
+          <button id="decrease" class="circle-btn"><i class="fas fa-minus"></i></button>
+          <input type="range" id="length" min="2" max="30" value="10">
+          <button id="increase" class="circle-btn"><i class="fas fa-plus"></i></button>
+        </div>
+      </div>
+
+      <!-- قسم الخيارات -->
+      <div class="checkboxes-section">
+        <label><input type="checkbox" id="uppercase" checked> ABC</label>
+        <label><input type="checkbox" id="lowercase" checked> abc</label>
+        <label><input type="checkbox" id="numbers" checked> 123</label>
+        <label><input type="checkbox" id="symbols"> #$&</label>
+        <label><input type="checkbox" id="easy-say"> Easy to say</label>
+        <label><input type="checkbox" id="easy-read"> Easy to read</label>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
