@@ -1,52 +1,502 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Random Password Generator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <!-- أضف زر تبديل الوضع الليلي -->
-<button id="toggle-night-mode">وضع ليلي</button> <br/> <br/>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Generator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
 
-    <div class="container">
-      <h1>Random Password Generator</h1>
-      <p>Create strong and secure passwords to keep your account safe online.</p>
+:root{
+  --bg:#F2F4F7;
+  --surface:#FFFFFF;
+  --panel:#FAFBFC;
+  --border:#E4E7EC;
+  --ink:#101828;
+  --ink-muted:#667085;
+  --accent:#2F6FED;
+  --accent-ink:#FFFFFF;
+  --field-bg:#F2F4F7;
+  --success:#12B76A;
+  --warn:#F79009;
+  --danger:#F04438;
+}
+html[data-theme="dark"]{
+  --bg:#0A0D12;
+  --surface:#161B22;
+  --panel:#12161C;
+  --border:#2D333B;
+  --ink:#E6EDF3;
+  --ink-muted:#8B949E;
+  --accent:#5B8DEF;
+  --accent-ink:#0D1117;
+  --field-bg:#1C232B;
+  --success:#3FC97F;
+  --warn:#FFB454;
+  --danger:#F87168;
+}
 
-      <!-- قسم كلمة المرور -->
-      <div class="password-section">
-        <div class="password-container">
-          <input type="text" id="password" readonly value="WcbPR8yNhLTgm5X" style="width: 80%;">
-          <span class="strength-indicator">Very strong</span>
-          <button id="generate-button"><i class="fas fa-sync-alt"></i></button>
-        </div>
-        <!-- <button id="copy-button"><i class="fa fa-copy"></i></button> -->
-        <!-- <button id="copy-button">Copy <i class="fa fa-copy"></i></button> -->
-        <button id="copy-button">Copy</button>
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px 16px;
+  transition:background .2s ease, color .2s ease;
+}
+
+.card{
+  width:100%;
+  max-width:480px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+}
+
+.section{ padding:32px 32px 0; }
+.section.settings{
+  background:var(--panel);
+  padding:28px 32px;
+  margin-top:32px;
+  border-top:1px solid var(--border);
+}
+
+.header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  margin-bottom:28px;
+}
+.header-text h1{
+  font-size:19px;
+  font-weight:600;
+  margin:0 0 5px;
+  letter-spacing:-0.01em;
+}
+.header-text p{
+  font-size:13.5px;
+  color:var(--ink-muted);
+  margin:0;
+  line-height:1.5;
+}
+.theme-btn{
+  border:1px solid var(--border);
+  background:var(--surface);
+  color:var(--ink-muted);
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:15px;
+  flex-shrink:0;
+  margin-inline-start:16px;
+}
+.theme-btn:hover{ color:var(--ink); border-color:var(--ink-muted); }
+
+.field{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:var(--field-bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px 12px 18px 20px;
+  margin-bottom:14px;
+  position:relative;
+}
+.field span{
+  flex:1;
+  font-family:'JetBrains Mono', Consolas, monospace;
+  font-size:19px;
+  letter-spacing:0.01em;
+  word-break:break-all;
+  min-height:24px;
+}
+.icon-btn{
+  width:38px;
+  height:38px;
+  flex-shrink:0;
+  border:none;
+  background:transparent;
+  color:var(--ink-muted);
+  cursor:pointer;
+  border-radius:8px;
+  font-size:16px;
+}
+.icon-btn:hover{ background:var(--border); color:var(--ink); }
+.toast{
+  position:absolute;
+  top:-34px;
+  right:0;
+  background:var(--ink);
+  color:var(--surface);
+  font-size:12px;
+  padding:5px 10px;
+  border-radius:6px;
+  opacity:0;
+  transform:translateY(4px);
+  transition:opacity .15s ease, transform .15s ease;
+  pointer-events:none;
+}
+.toast.show{ opacity:1; transform:translateY(0); }
+
+.strength-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:32px;
+}
+.strength-track{
+  flex:1;
+  height:6px;
+  border-radius:3px;
+  background:var(--border);
+  overflow:hidden;
+}
+.strength-fill{
+  height:100%;
+  border-radius:3px;
+  width:0%;
+  background:var(--danger);
+  transition:width .25s ease, background .25s ease;
+}
+.strength-label{
+  font-size:12.5px;
+  color:var(--ink-muted);
+  white-space:nowrap;
+  min-width:118px;
+  text-align:right;
+}
+
+.settings-title{
+  font-size:12px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--ink-muted);
+  margin:0 0 18px;
+}
+
+.setting-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+.setting-row label{ font-size:14px; font-weight:500; }
+.setting-row .value{
+  font-family:'JetBrains Mono', Consolas, monospace;
+  font-size:13px;
+  color:var(--ink-muted);
+}
+
+input[type="range"]{
+  width:100%;
+  -webkit-appearance:none;
+  height:4px;
+  border-radius:2px;
+  background:var(--border);
+  margin-bottom:28px;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:var(--accent);
+  cursor:pointer;
+  border:3px solid var(--surface);
+  box-shadow:0 0 0 1px var(--border);
+}
+input[type="range"]::-moz-range-thumb{
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:var(--accent);
+  cursor:pointer;
+  border:3px solid var(--surface);
+}
+
+.switches{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px 20px;
+}
+.switch-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.switch-row label{ font-size:13.5px; line-height:1.35; }
+.switch{
+  width:40px;
+  height:24px;
+  border-radius:12px;
+  background:var(--border);
+  border:none;
+  position:relative;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.switch::after{
+  content:'';
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:var(--surface);
+  transition:transform .15s ease;
+}
+.switch[aria-checked="true"]{ background:var(--accent); }
+.switch[aria-checked="true"]::after{ transform:translateX(16px); }
+
+.footer{ padding:24px 32px 32px; }
+.generate{
+  width:100%;
+  padding:15px;
+  background:var(--accent);
+  color:var(--accent-ink);
+  border:none;
+  border-radius:12px;
+  font-family:inherit;
+  font-size:14.5px;
+  font-weight:600;
+  cursor:pointer;
+}
+.generate:hover{ opacity:0.92; }
+.generate:active{ transform:translateY(1px); }
+
+@media (max-width:420px){
+  .switches{ grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="section">
+    <div class="header">
+      <div class="header-text">
+        <h1>Password Generator</h1>
+        <p>Create a strong, random password for your accounts.</p>
       </div>
+      <button class="theme-btn" id="theme-toggle" aria-label="Toggle dark mode">◐</button>
+    </div>
 
-      <!-- قسم طول كلمة المرور -->
-      <div class="controls-section">
-        <label for="length">Password length:<span style="width: 15px; margin-left: 10px;" id="length-value">10</span></label>
-        <div class="slider-container">
-          <button id="decrease" class="circle-btn"><i class="fas fa-minus"></i></button>
-          <input type="range" id="length" min="2" max="30" value="10">
-          <button id="increase" class="circle-btn"><i class="fas fa-plus"></i></button>
-        </div>
+    <div class="field">
+      <div class="toast" id="toast">Copied</div>
+      <span id="password">—</span>
+      <button class="icon-btn" id="copy-button" aria-label="Copy password" title="Copy">⧉</button>
+      <button class="icon-btn" id="generate-icon" aria-label="Generate new password" title="Generate">↻</button>
+    </div>
+
+    <div class="strength-row">
+      <div class="strength-track"><div class="strength-fill" id="strength-fill"></div></div>
+      <span class="strength-label" id="strength-label">—</span>
+    </div>
+  </div>
+
+  <div class="section settings">
+    <p class="settings-title">Length</p>
+    <div class="setting-row">
+      <label for="length">Characters</label>
+      <span class="value" id="length-value">16</span>
+    </div>
+    <input type="range" id="length" min="4" max="48" value="16">
+
+    <p class="settings-title">Character types</p>
+    <div class="switches" id="switches">
+      <div class="switch-row">
+        <label>Uppercase (A–Z)</label>
+        <button class="switch" data-key="upper" aria-checked="true"></button>
       </div>
-
-      <!-- قسم الخيارات -->
-      <div class="checkboxes-section">
-        <label><input type="checkbox" id="uppercase" checked> ABC</label>
-        <label><input type="checkbox" id="lowercase" checked> abc</label>
-        <label><input type="checkbox" id="numbers" checked> 123</label>
-        <label><input type="checkbox" id="symbols"> #$&</label>
-        <label><input type="checkbox" id="easy-say"> Easy to say</label>
-        <label><input type="checkbox" id="easy-read"> Easy to read</label>
+      <div class="switch-row">
+        <label>Lowercase (a–z)</label>
+        <button class="switch" data-key="lower" aria-checked="true"></button>
+      </div>
+      <div class="switch-row">
+        <label>Numbers (0–9)</label>
+        <button class="switch" data-key="digits" aria-checked="true"></button>
+      </div>
+      <div class="switch-row">
+        <label>Symbols (!@#$)</label>
+        <button class="switch" data-key="symbols" aria-checked="false"></button>
+      </div>
+      <div class="switch-row" style="grid-column:1 / -1;">
+        <label>Exclude ambiguous characters (l, 1, I, O, 0)</label>
+        <button class="switch" data-key="ambiguous" aria-checked="false"></button>
       </div>
     </div>
-    <script src="script.js"></script>
-  </body>
+  </div>
+
+  <div class="footer">
+    <button class="generate" id="generate-button">Generate password</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const CHARSETS = {
+    upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    lower: 'abcdefghijklmnopqrstuvwxyz',
+    digits: '0123456789',
+    symbols: '!@#$%^&*()_+-=[]{}|;:,.?'
+  };
+  const AMBIGUOUS = /[l1IO0o]/;
+
+  const state = { upper: true, lower: true, digits: true, symbols: false, ambiguous: false, length: 16 };
+
+  const els = {
+    password: document.getElementById('password'),
+    lengthInput: document.getElementById('length'),
+    lengthValue: document.getElementById('length-value'),
+    strengthFill: document.getElementById('strength-fill'),
+    strengthLabel: document.getElementById('strength-label'),
+    switches: document.querySelectorAll('.switch'),
+    generateBtn: document.getElementById('generate-button'),
+    generateIcon: document.getElementById('generate-icon'),
+    copyBtn: document.getElementById('copy-button'),
+    toast: document.getElementById('toast'),
+    themeToggle: document.getElementById('theme-toggle')
+  };
+
+  function activePool() {
+    let pool = '';
+    if (state.upper) pool += CHARSETS.upper;
+    if (state.lower) pool += CHARSETS.lower;
+    if (state.digits) pool += CHARSETS.digits;
+    if (state.symbols) pool += CHARSETS.symbols;
+    if (state.ambiguous) pool = pool.split('').filter(c => !AMBIGUOUS.test(c)).join('');
+    return pool;
+  }
+
+  function secureIndex(max) {
+    const range = 256 - (256 % max);
+    const buf = new Uint8Array(1);
+    let x;
+    do {
+      crypto.getRandomValues(buf);
+      x = buf[0];
+    } while (x >= range);
+    return x % max;
+  }
+
+  function buildPassword(pool, length) {
+    let out = '';
+    for (let i = 0; i < length; i++) out += pool[secureIndex(pool.length)];
+    return out;
+  }
+
+  function coversSelectedCategories(pw) {
+    if (state.upper && !/[A-Z]/.test(pw)) return false;
+    if (state.lower && !/[a-z]/.test(pw)) return false;
+    if (state.digits && !/[0-9]/.test(pw)) return false;
+    if (state.symbols && !new RegExp('[' + CHARSETS.symbols.replace(/[[\]\\^-]/g, '\\$&') + ']').test(pw)) return false;
+    return true;
+  }
+
+  function entropyBits(poolSize, length) {
+    return poolSize <= 1 ? 0 : Math.round(length * Math.log2(poolSize));
+  }
+
+  function strengthFromBits(bits) {
+    if (bits < 28) return { pct: 20, label: 'Very weak', color: 'var(--danger)' };
+    if (bits < 45) return { pct: 40, label: 'Weak', color: 'var(--warn)' };
+    if (bits < 65) return { pct: 60, label: 'Fair', color: 'var(--warn)' };
+    if (bits < 90) return { pct: 80, label: 'Strong', color: 'var(--success)' };
+    return { pct: 100, label: 'Very strong', color: 'var(--success)' };
+  }
+
+  function paintStrength(pool, length) {
+    const bits = entropyBits(pool.length, length);
+    const s = strengthFromBits(bits);
+    els.strengthFill.style.width = s.pct + '%';
+    els.strengthFill.style.background = s.color;
+    els.strengthLabel.textContent = s.label + ' · ' + bits + ' bits';
+  }
+
+  function generate() {
+    const pool = activePool();
+    if (!pool) {
+      els.password.textContent = 'Select at least one option';
+      paintStrength('', state.length);
+      return;
+    }
+    let pw = buildPassword(pool, state.length);
+    let attempts = 0;
+    while (!coversSelectedCategories(pw) && attempts < 20) {
+      pw = buildPassword(pool, state.length);
+      attempts++;
+    }
+    els.password.textContent = pw;
+    paintStrength(pool, state.length);
+  }
+
+  function generateWithFlourish() {
+    const pool = activePool();
+    if (!pool) { generate(); return; }
+    let frame = 0;
+    const total = 5;
+    const id = setInterval(() => {
+      els.password.textContent = buildPassword(pool, state.length);
+      frame++;
+      if (frame >= total) { clearInterval(id); generate(); }
+    }, 35);
+  }
+
+  els.switches.forEach(sw => {
+    sw.addEventListener('click', () => {
+      const key = sw.dataset.key;
+      const willEnable = sw.getAttribute('aria-checked') !== 'true';
+      if (!willEnable && key !== 'ambiguous') {
+        const activeCount = ['upper','lower','digits','symbols'].filter(k => state[k]).length;
+        if (activeCount <= 1) return;
+      }
+      state[key] = willEnable;
+      sw.setAttribute('aria-checked', String(willEnable));
+      generate();
+    });
+  });
+
+  els.lengthInput.addEventListener('input', () => {
+    state.length = parseInt(els.lengthInput.value, 10);
+    els.lengthValue.textContent = state.length;
+    generate();
+  });
+
+  els.generateBtn.addEventListener('click', generateWithFlourish);
+  els.generateIcon.addEventListener('click', generateWithFlourish);
+
+  els.copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(els.password.textContent);
+      els.toast.textContent = 'Copied';
+      els.toast.classList.add('show');
+      setTimeout(() => els.toast.classList.remove('show'), 1100);
+    } catch (e) {
+      els.toast.textContent = 'Copy failed';
+      els.toast.classList.add('show');
+      setTimeout(() => els.toast.classList.remove('show'), 1400);
+    }
+  });
+
+  let dark = false;
+  els.themeToggle.addEventListener('click', () => {
+    dark = !dark;
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  });
+
+  generate();
+})();
+</script>
+</body>
 </html>
